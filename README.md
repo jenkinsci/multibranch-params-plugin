@@ -28,9 +28,18 @@ This has drawbacks:
 This plugin lets you define parameters **once, at the Multibranch folder level**, via the
 Jenkins UI. They are injected into every branch job on each scan and survive rescans.
 
+Parameters injected by the plugin are clearly marked on the **Build with Parameters** page
+with a banner: _"The parameters below are managed by the Multibranch Pipeline configuration,
+not the Jenkinsfile."_
+
 ---
 
 ## Installation
+
+### From GitHub Releases
+
+Download the `.hpi` file from the [Releases](../../releases) page and install it via
+**Jenkins → Manage Jenkins → Plugins → Advanced → Upload Plugin**.
 
 ### From source
 
@@ -38,7 +47,7 @@ Jenkins UI. They are injected into every branch job on each scan and survive res
 git clone https://github.com/your-org/multibranch-params-plugin.git
 cd multibranch-params-plugin
 mvn clean package -DskipTests
-# Install the generated target/multibranch-params.hpi via Jenkins → Manage → Plugins → Advanced
+# Install target/multibranch-params.hpi via Jenkins → Manage Jenkins → Plugins → Advanced
 ```
 
 ### Requirements
@@ -61,7 +70,8 @@ mvn clean package -DskipTests
 3. Select **All branches get the same properties**
 4. Click **Add property** → **Branch Parameters**
 5. Click **Add Parameter** and configure your parameters
-6. **Save** and trigger a branch index scan
+6. Choose a **Jenkinsfile parameter policy** (see below)
+7. **Save** and trigger a branch index scan
 
 Every branch will now show **Build with Parameters** with your defined params.
 
@@ -76,58 +86,41 @@ Every branch will now show **Build with Parameters** with your defined params.
    - `main|develop` — only those two branches
    - `release/.*` — all release branches
    - `feature/.*` — all feature branches
-4. Add parameters and save
-
-### Pipeline / JCasC (Configuration as Code)
-
-```yaml
-jobs:
-  - script: |
-      multibranchPipelineJob('my-service') {
-        branchSources {
-          git {
-            id('my-repo')
-            remote('https://github.com/example/my-service.git')
-          }
-        }
-        factory {
-          workflowBranchProjectFactory {
-            scriptPath('Jenkinsfile')
-          }
-        }
-        configure {
-          it / sources / data / 'jenkins.branch.BranchSource' / strategy(
-            class: 'jenkins.branch.DefaultBranchPropertyStrategy') {
-              props {
-                'io.jenkins.plugins.multibranchparams.ParameterizedBranchProperty' {
-                  parameterDefinitions {
-                    'hudson.model.StringParameterDefinition' {
-                      name('DEPLOY_ENV')
-                      defaultValue('staging')
-                      description('Target deployment environment')
-                    }
-                    'hudson.model.BooleanParameterDefinition' {
-                      name('DRY_RUN')
-                      defaultValue('false')
-                      description('Skip actual deployment steps')
-                    }
-                  }
-                  mergeWithJenkinsfileParams(false)
-                }
-              }
-            }
-        }
-      }
-```
+4. Add parameters, choose a policy, and save
 
 ---
 
-## Parameter Merge Behaviour
+## Jenkinsfile Parameter Policy
 
-| Setting | Behaviour |
+Controls what happens when a branch's Jenkinsfile also defines parameters via
+`properties([parameters([...])])`.
+
+| Policy | Behaviour |
 |---|---|
-| **Merge unchecked** (default) | UI-defined parameters completely replace any `parameters {}` block in the Jenkinsfile |
-| **Merge checked** | UI params are combined with Jenkinsfile params. On name conflict, the UI param wins |
+| **Always replace** _(default)_ | Plugin params are injected at every scan, replacing whatever is there — including params previously set by a Jenkinsfile build. The Jenkinsfile can still overwrite them at build time, but the next scan restores the plugin params. |
+| **Merge** | Jenkinsfile-only params are preserved. On a name conflict the plugin's definition wins. Plugin params always appear grouped under the _"Managed by Multibranch Pipeline"_ banner; Jenkinsfile-only params appear above it. |
+| **Skip if Jenkinsfile owns params** | Plugin params are injected only until the first Jenkinsfile build runs. Once a build has stored its own `parameters {}` block, subsequent scans leave those params untouched. Useful when Jenkinsfiles are expected to be the long-term owner of their parameters. |
+
+> **Note:** No policy can prevent a running Jenkinsfile from calling `properties()` and
+> overwriting parameters at build time — that happens inside the pipeline execution.
+> The plugin operates exclusively at scan time.
+
+---
+
+## Visual indicator
+
+On the **Build with Parameters** page, plugin-injected parameters are preceded by a
+labelled banner so it is always clear which parameters are centrally managed:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  📋  MULTIBRANCH PIPELINE CONFIGURATION                  │
+│  The parameters below are managed by the Multibranch    │
+│  Pipeline configuration, not the Jenkinsfile.           │
+└─────────────────────────────────────────────────────────┘
+  DEPLOY_ENV   [ staging        ]
+  DRY_RUN      [ ☐ ]
+```
 
 ---
 
@@ -144,7 +137,46 @@ All built-in Jenkins parameter types work out of the box:
 - Multi-line String Parameter
 
 Third-party parameter plugins (e.g., Extended Choice Parameter, Git Parameter) are also
-automatically available in the dropdown.
+automatically available in the **Add Parameter** dropdown.
+
+---
+
+## Pipeline / JCasC (Configuration as Code)
+
+```groovy
+multibranchPipelineJob('my-service') {
+  branchSources {
+    git {
+      id('my-repo')
+      remote('https://github.com/example/my-service.git')
+    }
+  }
+  configure {
+    it / sources / data / 'jenkins.branch.BranchSource' / strategy(
+      class: 'jenkins.branch.DefaultBranchPropertyStrategy') {
+        props {
+          'io.jenkins.plugins.multibranchparams.ParameterizedBranchProperty' {
+            parameterDefinitions {
+              'hudson.model.StringParameterDefinition' {
+                name('DEPLOY_ENV')
+                defaultValue('staging')
+                description('Target deployment environment')
+              }
+              'hudson.model.BooleanParameterDefinition' {
+                name('DRY_RUN')
+                defaultValue('false')
+                description('Skip actual deployment steps')
+              }
+            }
+            parameterPolicy('REPLACE')
+          }
+        }
+      }
+  }
+}
+```
+
+Valid `parameterPolicy` values: `REPLACE`, `MERGE`, `SKIP_IF_JENKINSFILE`.
 
 ---
 
@@ -154,13 +186,7 @@ automatically available in the dropdown.
 # Run all tests
 mvn test
 
-# Run only unit tests (no Jenkins instance)
-mvn test -Dtest=ParameterizedBranchPropertyStrategyTest
-
-# Run integration tests (spins up Jenkins)
-mvn test -Dtest=ParameterizedBranchPropertyTest
-
-# Start a local Jenkins with the plugin pre-installed (great for manual testing)
+# Start a local Jenkins with the plugin pre-installed
 mvn hpi:run
 # Then open http://localhost:8080/jenkins
 ```
@@ -179,8 +205,9 @@ ParameterizedBranchPropertyStrategy  (extends BranchPropertyStrategy)
 │  ├── getPropertiesFor(SCMHead)      ← decides which branches get params
 │  └── DescriptorImpl
 │
-config.jelly (×2)                     ← Jelly UI rendered in Configure page
-config.properties (×2)               ← i18n strings
+ParameterPolicy                       (enum: REPLACE / MERGE / SKIP_IF_JENKINSFILE)
+MultiBranchHeaderParameter            (visual marker on Build with Parameters page)
+config.jelly (×2)                     ← Jelly UI for Configure page
 ```
 
 ---
