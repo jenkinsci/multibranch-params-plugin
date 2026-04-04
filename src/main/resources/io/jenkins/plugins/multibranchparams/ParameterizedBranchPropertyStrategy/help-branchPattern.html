@@ -1,0 +1,14 @@
+<div>
+  <p>A Java regular expression matched against the <strong>full branch name</strong>.
+     The pattern must match the entire name (as if surrounded by <code>^</code> and <code>$</code>).</p>
+  <p>Examples:</p>
+  <ul>
+    <li><code>main|develop</code> – matches only <em>main</em> and <em>develop</em></li>
+    <li><code>release/.*</code> – matches all release branches</li>
+    <li><code>feature/.*</code> – matches all feature branches</li>
+    <li><code>(?!feature/).*</code> – matches everything except feature branches (negative lookahead)</li>
+    <li><code>.*</code> – matches everything (same as "All branches" mode)</li>
+  </ul>
+  <p>If the pattern is syntactically invalid, it is treated as matching all branches
+     and a warning is written to the Jenkins log.</p>
+</div>

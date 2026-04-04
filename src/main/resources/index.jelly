@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Enables UI-defined build parameters on Jenkins Multibranch Pipeline jobs.
+    Parameters defined at the folder level are injected into all branch builds
+    and survive branch index rescans.
+</div>

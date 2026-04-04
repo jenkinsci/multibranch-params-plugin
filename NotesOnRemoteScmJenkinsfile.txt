@@ -1,0 +1,22 @@
+${branch} in a remote SCMFileProvider — does the plugin solve the chicken-and-egg problem?
+
+Yes, and this is actually one of the strongest use cases for this plugin.
+
+The classic chicken-and-egg problem:
+
+
+SCMFileProvider needs ${branch} to find the Jenkinsfile
+  → ${branch} is declared inside the Jenkinsfile  
+  → Jenkinsfile can't be found on first run
+  → ${branch} never gets defined
+  → loop
+The reason it failed before is that parameters {} / properties() in a Jenkinsfile only registers the parameter after the first successful build completes. So on run #1, the parameter doesn't exist yet when Jenkins tries to locate the Jenkinsfile.
+
+The plugin breaks the cycle because jobDecorator() runs during the scan, before any build starts. By the time Jenkins attempts to resolve ${branch} to locate the Jenkinsfile, the ParametersDefinitionProperty already exists on the branch job with your configured default value.
+
+One important caveat: the default value for branch needs to be appropriate per-branch. If you define a static default like main, it won't work correctly for feature/xyz branches. The options are:
+
+Fixed default per strategy: Use ParameterizedBranchPropertyStrategy with INCLUDE_PATTERN to define different branch defaults per branch group — but this requires multiple strategy entries
+Use BRANCH_NAME instead: Jenkins always injects BRANCH_NAME as an env var in multibranch builds (set by the Branch API before anything else runs), so ${BRANCH_NAME} in the SCMFileProvider config would resolve correctly on every branch without needing a parameter at all
+Use the plugin with ${BRANCH_NAME} as the default value for the branch parameter — this way branch always defaults to the current branch name automatically, can be overridden per-build, and exists before the first build
+The third option gives you the best of both worlds: the parameter is always defined (plugin sets it before first build), defaults to the right branch name automatically, and can still be overridden if needed.

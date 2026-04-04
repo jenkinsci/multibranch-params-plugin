@@ -1,0 +1,15 @@
+// Minimal Jenkinsfile used by integration tests.
+// It simply echoes whatever parameters were injected.
+pipeline {
+    agent any
+    stages {
+        stage('Print Parameters') {
+            steps {
+                script {
+                    echo "DEPLOY_ENV=${params.DEPLOY_ENV}"
+                    echo "DRY_RUN=${params.DRY_RUN}"
+                }
+            }
+        }
+    }
+}

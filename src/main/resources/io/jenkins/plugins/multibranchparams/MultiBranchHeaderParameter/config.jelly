@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <!-- Read-only display on the job configure page — the header is managed
+       programmatically and cannot be deleted or reconfigured by the user. -->
+  <f:block>
+    <div style="border-left: 4px solid #1e7bbf;
+                background-color: #eaf4fb;
+                padding: 6px 12px;
+                border-radius: 0 3px 3px 0;
+                font-size: 0.8em;
+                color: #5d6d7e;">
+      Multibranch Params Plugin — visual header (injected automatically, not configurable)
+    </div>
+  </f:block>
+</j:jelly>

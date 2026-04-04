@@ -1,0 +1,7 @@
+Plugin-Version: 1.0.0-SNAPSHOT
+Jenkins-Version: 2.426.3
+Short-Name: multibranch-params
+Long-Name: Multibranch Pipeline Parameterization Plugin
+Url: https://github.com/your-org/multibranch-params-plugin
+Description: Enables UI-defined parameters on Jenkins Multibranch Pipeline jobs.
+Compatible-Since-Version: 1.0.0-SNAPSHOT

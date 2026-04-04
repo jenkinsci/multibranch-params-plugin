@@ -1,0 +1,13 @@
+target/
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+*.class
+*.hpi
+*.jpi
+work/
+.mvn/timing.properties

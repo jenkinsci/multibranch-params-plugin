@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
+
+  <f:description>
+    ${%description}
+  </f:description>
+
+  <f:block>
+    <f:hetero-list name="parameterDefinitions"
+                   hasHeader="true"
+                   items="${instance.parameterDefinitions}"
+                   descriptors="${descriptor.parameterDescriptors}"
+                   addCaption="${%Add Parameter}"
+                   deleteCaption="${%Delete}"
+                   oneEach="false"
+                   honorOrder="true"/>
+  </f:block>
+
+  <f:entry title="${%Jenkinsfile parameter policy}"
+           help="/plugin/multibranch-params/help-parameterPolicy.html">
+    <f:select field="parameterPolicy"/>
+  </f:entry>
+
+</j:jelly>

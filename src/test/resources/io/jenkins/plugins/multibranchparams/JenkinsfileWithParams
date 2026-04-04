@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'FROM_JENKINSFILE', defaultValue: 'jenkins-default', description: 'Declared in Jenkinsfile')
+        string(name: 'DEPLOY_ENV',       defaultValue: 'dev',             description: 'Will be overridden by UI')
+    }
+    stages {
+        stage('Print Parameters') {
+            steps {
+                script {
+                    echo "FROM_JENKINSFILE=${params.FROM_JENKINSFILE}"
+                    echo "DEPLOY_ENV=${params.DEPLOY_ENV}"
+                }
+            }
+        }
+    }
+}

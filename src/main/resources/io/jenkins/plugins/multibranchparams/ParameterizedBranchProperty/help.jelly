@@ -1,0 +1,35 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+  <div>
+    <p>
+      The <strong>Multibranch Pipeline Parameterization Plugin</strong> lets you define
+      build parameters at the Multibranch Pipeline folder level via the UI.
+    </p>
+    <p>
+      Parameters are injected into every branch job during each branch index scan, so
+      they are always present regardless of what the branch's <code>Jenkinsfile</code> declares.
+    </p>
+    <h3>Quick start</h3>
+    <ol>
+      <li>Open your Multibranch Pipeline job → <em>Configure</em>.</li>
+      <li>Under <em>Branch Sources</em>, expand <em>Property strategy</em>.</li>
+      <li>
+        Select <strong>All branches get the same properties</strong> and add
+        <em>Branch Parameters</em>, <strong>or</strong> select
+        <strong>Parameterized Branch Strategy</strong> to apply parameters
+        only to matching branches.
+      </li>
+      <li>Use <em>Add Parameter</em> to add String, Boolean, Choice, etc. parameters.</li>
+      <li>Save and trigger a branch index scan — the parameters will immediately appear
+          on each branch's <em>Build with Parameters</em> page.</li>
+    </ol>
+    <h3>Merge behaviour</h3>
+    <p>
+      If your <code>Jenkinsfile</code> also declares a <code>parameters {}</code> block,
+      tick <em>Merge with Jenkinsfile parameters</em> to combine both sets.
+      On name conflict, the parameters defined here take precedence.
+      When unticked (default), the UI-defined parameters fully replace those from the
+      <code>Jenkinsfile</code>.
+    </p>
+  </div>
+</j:jelly>
