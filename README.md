@@ -141,41 +141,94 @@ automatically available in the **Add Parameter** dropdown.
 
 ---
 
-## Pipeline / JCasC (Configuration as Code)
+## Job DSL
+
+The plugin integrates natively with the [Job DSL plugin](https://plugins.jenkins.io/job-dsl/)
+via Dynamic DSL — no extra configuration required. Use the `branchSource {}` block
+(singular) inside `branchSources {}` to co-locate the SCM source and the branch strategy
+in one entry.
+
+Use `parameterizedBranchStrategy` in all cases — set `filterMode('ALL')` to apply
+parameters to every branch, or `filterMode('INCLUDE_PATTERN')` / `filterMode('EXCLUDE_PATTERN')`
+to target specific branches by regex.
+
+### Apply parameters to all branches
 
 ```groovy
 multibranchPipelineJob('my-service') {
   branchSources {
-    git {
-      id('my-repo')
-      remote('https://github.com/example/my-service.git')
-    }
-  }
-  configure {
-    it / sources / data / 'jenkins.branch.BranchSource' / strategy(
-      class: 'jenkins.branch.DefaultBranchPropertyStrategy') {
-        props {
-          'io.jenkins.plugins.multibranchparams.ParameterizedBranchProperty' {
-            parameterDefinitions {
-              'hudson.model.StringParameterDefinition' {
-                name('DEPLOY_ENV')
-                defaultValue('staging')
-                description('Target deployment environment')
-              }
-              'hudson.model.BooleanParameterDefinition' {
-                name('DRY_RUN')
-                defaultValue('false')
-                description('Skip actual deployment steps')
-              }
+    branchSource {
+      source {
+        git {
+          id('my-repo')
+          remote('https://github.com/example/my-service.git')
+        }
+      }
+      strategy {
+        parameterizedBranchStrategy {
+          filterMode('ALL')
+          parameterPolicy('REPLACE')
+          parameterDefinitions {
+            stringParam {
+              name('DEPLOY_ENV')
+              defaultValue('staging')
+              description('Target environment')
             }
-            parameterPolicy('REPLACE')
+            booleanParam {
+              name('DRY_RUN')
+              defaultValue(false)
+              description('Skip deployment')
+            }
+            choiceParam {
+              name('REGION')
+              choices(['eu-west-1', 'us-east-1', 'ap-southeast-1'])
+              description('AWS region')
+            }
           }
         }
       }
+    }
   }
 }
 ```
 
+### Apply parameters to specific branches only
+
+```groovy
+multibranchPipelineJob('my-service') {
+  branchSources {
+    branchSource {
+      source {
+        git {
+          id('my-repo')
+          remote('https://github.com/example/my-service.git')
+        }
+      }
+      strategy {
+        parameterizedBranchStrategy {
+          filterMode('INCLUDE_PATTERN')
+          branchPattern('main|develop|release/.*')
+          parameterPolicy('REPLACE')
+          parameterDefinitions {
+            stringParam {
+              name('DEPLOY_ENV')
+              defaultValue('staging')
+              description('Target environment')
+            }
+            booleanParam {
+              name('DRY_RUN')
+              defaultValue(false)
+              description('Skip deployment')
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Valid `filterMode` values: `ALL`, `INCLUDE_PATTERN`, `EXCLUDE_PATTERN`.  
 Valid `parameterPolicy` values: `REPLACE`, `MERGE`, `SKIP_IF_JENKINSFILE`.
 
 ---
