@@ -8,9 +8,11 @@ import jenkins.branch.BranchPropertyStrategy;
 import jenkins.branch.BranchPropertyStrategyDescriptor;
 import jenkins.scm.api.SCMHead;
 import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.verb.POST;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -212,7 +214,9 @@ public class ParameterizedBranchPropertyStrategy extends BranchPropertyStrategy 
          *
          * @return list-box model for the filterMode select
          */
+        @POST
         public ListBoxModel doFillFilterModeItems() {
+            Jenkins.get().checkPermission(Jenkins.READ);
             ListBoxModel model = new ListBoxModel();
             model.add("All branches", FilterMode.ALL.name());
             model.add("Only branches matching pattern", FilterMode.INCLUDE_PATTERN.name());
@@ -220,7 +224,9 @@ public class ParameterizedBranchPropertyStrategy extends BranchPropertyStrategy 
             return model;
         }
 
+        @POST
         public ListBoxModel doFillParameterPolicyItems() {
+            Jenkins.get().checkPermission(Jenkins.READ);
             ListBoxModel model = new ListBoxModel();
             model.add("Always replace (use only Multibranch params, ignore Jenkinsfile)", ParameterPolicy.REPLACE.name());
             model.add("Merge — Multibranch wins on conflict", ParameterPolicy.MERGE_PLUGIN_WINS.name());

@@ -11,9 +11,11 @@ import hudson.util.ListBoxModel;
 import jenkins.branch.BranchProperty;
 import jenkins.branch.BranchPropertyDescriptor;
 import jenkins.branch.JobDecorator;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.verb.POST;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -268,7 +270,9 @@ public class ParameterizedBranchProperty extends BranchProperty {
                     .collect(Collectors.toList());
         }
 
+        @POST
         public ListBoxModel doFillParameterPolicyItems() {
+            Jenkins.get().checkPermission(Jenkins.READ);
             ListBoxModel model = new ListBoxModel();
             model.add("Always replace (use only Multibranch params, ignore Jenkinsfile)", ParameterPolicy.REPLACE.name());
             model.add("Merge — Multibranch wins on conflict", ParameterPolicy.MERGE_PLUGIN_WINS.name());
