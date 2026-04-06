@@ -11,7 +11,6 @@ import hudson.util.ListBoxModel;
 import jenkins.branch.BranchProperty;
 import jenkins.branch.BranchPropertyDescriptor;
 import jenkins.branch.JobDecorator;
-import jenkins.branch.MultiBranchProject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -278,10 +277,5 @@ public class ParameterizedBranchProperty extends BranchProperty {
             return model;
         }
 
-        @Override
-        @SuppressWarnings("rawtypes")
-        public boolean isApplicable(MultiBranchProject project) {
-            return true;
-        }
     }
 }

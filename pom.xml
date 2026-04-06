@@ -14,7 +14,7 @@
 
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>multibranch-params</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
 
     <name>Multibranch Pipeline Parameterization Plugin</name>
@@ -29,19 +29,11 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>krzysztofkrzeslak</id>
-            <name>Krzysztof Krzeslak</name>
-            <email>kjarzyna1271@gmail.com</email>
-        </developer>
-    </developers>
-
     <scm>
         <connection>scm:git:https://github.com/krzysztofkrzeslak/multibranch-params-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:krzysztofkrzeslak/multibranch-params-plugin.git</developerConnection>
         <url>https://github.com/krzysztofkrzeslak/multibranch-params-plugin</url>
-        <tag>HEAD</tag>
+        <tag>${scmTag}</tag>
     </scm>
 
     <issueManagement>
@@ -50,33 +42,26 @@
     </issueManagement>
 
     <properties>
-        <jenkins.version>2.479.3</jenkins.version>
-        <java.level>11</java.level>
+        <changelist>999999-SNAPSHOT</changelist>
+        <jenkins.baseline>2.528</jenkins.baseline>
+        <jenkins.version>${jenkins.baseline}.3</jenkins.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <checkstyle.configLocation>checkstyle.xml</checkstyle.configLocation>
         <spotbugs.effort>Max</spotbugs.effort>
         <spotbugs.threshold>Medium</spotbugs.threshold>
+        <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
+        <ban-commons-lang-2.skip>false</ban-commons-lang-2.skip>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.479.x</artifactId>
-                <version>5054.v620b_5d2b_d5e6</version>
+                <artifactId>bom-${jenkins.baseline}.x</artifactId>
+                <version>6237.v4da_61a_4a_19e5</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-
-            <!--
-                Fix RequireUpperBoundDeps: pin asm-api to the version required by
-                scm-api so the enforcer is satisfied.
-            -->
-            <dependency>
-                <groupId>io.jenkins.plugins</groupId>
-                <artifactId>asm-api</artifactId>
-                <version>9.7.1-97.v4cc844130d97</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -90,7 +75,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-multibranch</artifactId>
-            <version>806.vb_b_688f609ee9</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -107,7 +91,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.3</version>
+            <version>4.9.3</version>
             <optional>true</optional>
         </dependency>
 
@@ -120,7 +104,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-cps</artifactId>
-            <version>4014.vcd7dc51d8b_30</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -218,12 +201,6 @@
                 <configuration>
                     <reuseForks>true</reuseForks>
                     <forkCount>1</forkCount>
-                    <!--
-                        Java 17+ module system compatibility.
-                        XStream and the Jenkins test harness use deep reflection on JDK
-                        internals. The add-opens flags below are required or tests fail
-                        with InaccessibleObjectException at runtime.
-                    -->
                     <argLine>
                         -Djava.awt.headless=true
                         --add-opens java.base/java.util=ALL-UNNAMED
