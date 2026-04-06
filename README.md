@@ -97,9 +97,10 @@ Controls what happens when a branch's Jenkinsfile also defines parameters via
 
 | Policy | Behaviour |
 |---|---|
-| **Always replace** _(default)_ | Plugin params are injected at every scan, replacing whatever is there — including params previously set by a Jenkinsfile build. The Jenkinsfile can still overwrite them at build time, but the next scan restores the plugin params. |
-| **Merge** | Jenkinsfile-only params are preserved. On a name conflict the plugin's definition wins. Plugin params always appear grouped under the _"Managed by Multibranch Pipeline"_ banner; Jenkinsfile-only params appear above it. |
-| **Skip if Jenkinsfile owns params** | Plugin params are injected only until the first Jenkinsfile build runs. Once a build has stored its own `parameters {}` block, subsequent scans leave those params untouched. Useful when Jenkinsfiles are expected to be the long-term owner of their parameters. |
+| **Always replace** _(default)_ | Only Multibranch params are used. Any params declared in the Jenkinsfile are ignored. The Jenkinsfile can still overwrite them at build time, but the next scan restores the Multibranch params. |
+| **Merge — Multibranch wins** | Params from both sources are combined. Jenkinsfile-only params appear above the banner. On a name conflict the Multibranch definition takes precedence. |
+| **Merge — Jenkinsfile wins** | Params from both sources are combined. All Jenkinsfile params are kept as-is above the banner. On a name conflict the Jenkinsfile definition is kept. Only Multibranch params whose names are not already in the Jenkinsfile are added below the banner. |
+| **Dismiss if Jenkinsfile defines any** | Multibranch params are injected only until the first Jenkinsfile build runs. Once a build has stored its own `parameters {}` block, subsequent scans leave those params untouched. Useful when Jenkinsfiles are expected to be the long-term owner of their parameters. |
 
 > **Note:** No policy can prevent a running Jenkinsfile from calling `properties()` and
 > overwriting parameters at build time — that happens inside the pipeline execution.
@@ -229,7 +230,7 @@ multibranchPipelineJob('my-service') {
 ```
 
 Valid `filterMode` values: `ALL`, `INCLUDE_PATTERN`, `EXCLUDE_PATTERN`.  
-Valid `parameterPolicy` values: `REPLACE`, `MERGE`, `SKIP_IF_JENKINSFILE`.
+Valid `parameterPolicy` values: `REPLACE`, `MERGE_PLUGIN_WINS`, `MERGE_JENKINSFILE_WINS`, `SKIP_IF_JENKINSFILE`.
 
 ---
 

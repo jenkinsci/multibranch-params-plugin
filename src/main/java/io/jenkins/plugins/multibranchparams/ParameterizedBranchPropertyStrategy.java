@@ -2,7 +2,6 @@ package io.jenkins.plugins.multibranchparams;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.DescriptorExtensionList;
 import hudson.model.ParameterDefinition;
 import jenkins.branch.BranchProperty;
 import jenkins.branch.BranchPropertyStrategy;
@@ -223,9 +222,10 @@ public class ParameterizedBranchPropertyStrategy extends BranchPropertyStrategy 
 
         public ListBoxModel doFillParameterPolicyItems() {
             ListBoxModel model = new ListBoxModel();
-            model.add("Always replace (plugin params override Jenkinsfile)", ParameterPolicy.REPLACE.name());
-            model.add("Merge (keep Jenkinsfile params, plugin wins on conflict)", ParameterPolicy.MERGE.name());
-            model.add("Skip if Jenkinsfile owns params (inject only until first Jenkinsfile build)", ParameterPolicy.SKIP_IF_JENKINSFILE.name());
+            model.add("Always replace (use only Multibranch params, ignore Jenkinsfile)", ParameterPolicy.REPLACE.name());
+            model.add("Merge — Multibranch wins on conflict", ParameterPolicy.MERGE_PLUGIN_WINS.name());
+            model.add("Merge — Jenkinsfile wins on conflict", ParameterPolicy.MERGE_JENKINSFILE_WINS.name());
+            model.add("Dismiss Multibranch if Jenkinsfile defines any params", ParameterPolicy.SKIP_IF_JENKINSFILE.name());
             return model;
         }
     }

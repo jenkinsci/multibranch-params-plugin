@@ -18,6 +18,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -132,10 +133,11 @@ public class ParameterizedBranchProperty extends BranchProperty {
              * Resolves the effective parameter list based on {@link #parameterPolicy}.
              *
              * <ul>
-             *   <li>REPLACE:            {@code [Header, UI params]}</li>
-             *   <li>MERGE:              {@code [Jenkinsfile-only params, Header, UI params]}</li>
-             *   <li>SKIP_IF_JENKINSFILE: {@code null} when Jenkinsfile owns params,
-             *                            {@code [Header, UI params]} otherwise</li>
+             *   <li>REPLACE:               {@code [Header, UI params]}</li>
+             *   <li>MERGE_PLUGIN_WINS:     {@code [Jenkinsfile-only params, Header, UI params]}</li>
+             *   <li>MERGE_JENKINSFILE_WINS:{@code [All Jenkinsfile params, Header, plugin-only params]}</li>
+             *   <li>SKIP_IF_JENKINSFILE:   {@code null} when Jenkinsfile owns params,
+             *                              {@code [Header, UI params]} otherwise</li>
              * </ul>
              *
              * @return the list to inject, or {@code null} to leave existing params untouched
@@ -144,52 +146,14 @@ public class ParameterizedBranchProperty extends BranchProperty {
                     List<JobProperty<? super P>> existingProps) {
 
                 switch (parameterPolicy) {
-
                     case REPLACE:
                         return buildUiParamList();
-
-                    case MERGE: {
-                        Set<String> uiNames = parameterDefinitions.stream()
-                                .map(ParameterDefinition::getName)
-                                .collect(Collectors.toSet());
-
-                        List<ParameterDefinition> jenkinsfileOnly = new ArrayList<>();
-                        for (JobProperty<? super P> prop : existingProps) {
-                            if (prop instanceof ParametersDefinitionProperty) {
-                                ((ParametersDefinitionProperty) prop).getParameterDefinitions()
-                                        .stream()
-                                        .filter(p -> !(p instanceof MultiBranchHeaderParameter))
-                                        .filter(p -> !uiNames.contains(p.getName()))
-                                        .forEach(jenkinsfileOnly::add);
-                            }
-                        }
-
-                        // [Jenkinsfile-only params …, Header, UI params …]
-                        List<ParameterDefinition> merged = new ArrayList<>(jenkinsfileOnly);
-                        merged.add(new MultiBranchHeaderParameter());
-                        merged.addAll(parameterDefinitions);
-                        return merged;
-                    }
-
-                    case SKIP_IF_JENKINSFILE: {
-                        for (JobProperty<? super P> prop : existingProps) {
-                            if (prop instanceof ParametersDefinitionProperty) {
-                                List<ParameterDefinition> current =
-                                        ((ParametersDefinitionProperty) prop).getParameterDefinitions();
-                                boolean hasRealParams = current.stream()
-                                        .anyMatch(p -> !(p instanceof MultiBranchHeaderParameter));
-                                boolean hasHeader = current.stream()
-                                        .anyMatch(p -> p instanceof MultiBranchHeaderParameter);
-                                if (hasRealParams && !hasHeader) {
-                                    // Params exist and were NOT set by this plugin → Jenkinsfile owns them
-                                    return null;
-                                }
-                            }
-                        }
-                        // No Jenkinsfile-owned params found → inject
-                        return buildUiParamList();
-                    }
-
+                    case MERGE_PLUGIN_WINS:
+                        return mergePluginWins(existingProps);
+                    case MERGE_JENKINSFILE_WINS:
+                        return mergeJenkinsfileWins(existingProps);
+                    case SKIP_IF_JENKINSFILE:
+                        return skipIfJenkinsfileOwns(existingProps);
                     default:
                         return buildUiParamList();
                 }
@@ -201,6 +165,85 @@ public class ParameterizedBranchProperty extends BranchProperty {
                 list.add(new MultiBranchHeaderParameter());
                 list.addAll(parameterDefinitions);
                 return list;
+            }
+
+            /**
+             * MERGE_PLUGIN_WINS: Jenkinsfile-only params appear first, then the header,
+             * then all plugin params. On a name conflict the plugin definition is used.
+             * Result: {@code [Jenkinsfile-only…, Header, UI params…]}
+             */
+            private List<ParameterDefinition> mergePluginWins(
+                    List<JobProperty<? super P>> existingProps) {
+                Set<String> uiNames = parameterDefinitions.stream()
+                        .map(ParameterDefinition::getName)
+                        .collect(Collectors.toSet());
+                List<ParameterDefinition> jenkinsfileOnly = new ArrayList<>();
+                for (JobProperty<? super P> prop : existingProps) {
+                    if (prop instanceof ParametersDefinitionProperty) {
+                        ((ParametersDefinitionProperty) prop).getParameterDefinitions()
+                                .stream()
+                                .filter(p -> !(p instanceof MultiBranchHeaderParameter))
+                                .filter(p -> !uiNames.contains(p.getName()))
+                                .forEach(jenkinsfileOnly::add);
+                    }
+                }
+                List<ParameterDefinition> merged = new ArrayList<>(jenkinsfileOnly);
+                merged.add(new MultiBranchHeaderParameter());
+                merged.addAll(parameterDefinitions);
+                return merged;
+            }
+
+            /**
+             * MERGE_JENKINSFILE_WINS: all Jenkinsfile params are kept as-is first,
+             * then the header, then only the plugin params whose names are NOT already
+             * covered by the Jenkinsfile. On a name conflict the Jenkinsfile wins.
+             * Result: {@code [All Jenkinsfile params…, Header, plugin-only params…]}
+             */
+            private List<ParameterDefinition> mergeJenkinsfileWins(
+                    List<JobProperty<? super P>> existingProps) {
+                Set<String> jenkinsfileNames = new HashSet<>();
+                List<ParameterDefinition> jenkinsfileParams = new ArrayList<>();
+                for (JobProperty<? super P> prop : existingProps) {
+                    if (prop instanceof ParametersDefinitionProperty) {
+                        ((ParametersDefinitionProperty) prop).getParameterDefinitions()
+                                .stream()
+                                .filter(p -> !(p instanceof MultiBranchHeaderParameter))
+                                .forEach(p -> {
+                                    jenkinsfileParams.add(p);
+                                    jenkinsfileNames.add(p.getName());
+                                });
+                    }
+                }
+                List<ParameterDefinition> pluginOnly = parameterDefinitions.stream()
+                        .filter(p -> !jenkinsfileNames.contains(p.getName()))
+                        .collect(Collectors.toList());
+                List<ParameterDefinition> merged = new ArrayList<>(jenkinsfileParams);
+                merged.add(new MultiBranchHeaderParameter());
+                merged.addAll(pluginOnly);
+                return merged;
+            }
+
+            /**
+             * SKIP_IF_JENKINSFILE policy: returns {@code null} (leave untouched) when the
+             * job already has params that were NOT set by this plugin (no header marker),
+             * otherwise injects normally.
+             */
+            private List<ParameterDefinition> skipIfJenkinsfileOwns(
+                    List<JobProperty<? super P>> existingProps) {
+                for (JobProperty<? super P> prop : existingProps) {
+                    if (prop instanceof ParametersDefinitionProperty) {
+                        List<ParameterDefinition> current =
+                                ((ParametersDefinitionProperty) prop).getParameterDefinitions();
+                        boolean hasRealParams = current.stream()
+                                .anyMatch(p -> !(p instanceof MultiBranchHeaderParameter));
+                        boolean hasHeader = current.stream()
+                                .anyMatch(p -> p instanceof MultiBranchHeaderParameter);
+                        if (hasRealParams && !hasHeader) {
+                            return null;
+                        }
+                    }
+                }
+                return buildUiParamList();
             }
         };
     }
@@ -228,9 +271,10 @@ public class ParameterizedBranchProperty extends BranchProperty {
 
         public ListBoxModel doFillParameterPolicyItems() {
             ListBoxModel model = new ListBoxModel();
-            model.add("Always replace (plugin params override Jenkinsfile)", ParameterPolicy.REPLACE.name());
-            model.add("Merge (keep Jenkinsfile params, plugin wins on conflict)", ParameterPolicy.MERGE.name());
-            model.add("Skip if Jenkinsfile owns params (inject only until first Jenkinsfile build)", ParameterPolicy.SKIP_IF_JENKINSFILE.name());
+            model.add("Always replace (use only Multibranch params, ignore Jenkinsfile)", ParameterPolicy.REPLACE.name());
+            model.add("Merge — Multibranch wins on conflict", ParameterPolicy.MERGE_PLUGIN_WINS.name());
+            model.add("Merge — Jenkinsfile wins on conflict", ParameterPolicy.MERGE_JENKINSFILE_WINS.name());
+            model.add("Dismiss Multibranch if Jenkinsfile defines any params", ParameterPolicy.SKIP_IF_JENKINSFILE.name());
             return model;
         }
 

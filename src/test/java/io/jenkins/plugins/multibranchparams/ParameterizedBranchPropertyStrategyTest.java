@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Pure unit tests for {@link ParameterizedBranchPropertyStrategy}.
@@ -61,9 +60,9 @@ public class ParameterizedBranchPropertyStrategyTest {
     }
 
     @Test
-    public void defaults_mergeIsFalse() {
+    public void defaults_policyIsReplace() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
-        assertEquals(false, s.isMergeWithJenkinsfileParams());
+        assertEquals(ParameterPolicy.REPLACE, s.getParameterPolicy());
     }
 
     // -------------------------------------------------------------------------
@@ -201,7 +200,7 @@ public class ParameterizedBranchPropertyStrategyTest {
         s.setParameterDefinitions(List.of(
                 new StringParameterDefinition("DEPLOY_ENV", "staging", "Env"),
                 new BooleanParameterDefinition("DRY_RUN", false, "Dry run")));
-        s.setMergeWithJenkinsfileParams(true);
+        s.setParameterPolicy(ParameterPolicy.MERGE_PLUGIN_WINS);
 
         List<BranchProperty> props = s.getPropertiesFor(head("main"));
         assertThat(props, hasSize(1));
@@ -210,7 +209,7 @@ public class ParameterizedBranchPropertyStrategyTest {
         assertThat(injected.getParameterDefinitions(), hasSize(2));
         assertEquals("DEPLOY_ENV", injected.getParameterDefinitions().get(0).getName());
         assertEquals("DRY_RUN", injected.getParameterDefinitions().get(1).getName());
-        assertTrue(injected.isMergeWithJenkinsfileParams());
+        assertEquals(ParameterPolicy.MERGE_PLUGIN_WINS, injected.getParameterPolicy());
     }
 
     @Test

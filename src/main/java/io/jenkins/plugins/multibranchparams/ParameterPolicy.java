@@ -11,14 +11,16 @@ package io.jenkins.plugins.multibranchparams;
  * <table>
  *   <tr><th>Mode</th><th>At scan time</th><th>After a Jenkinsfile build runs</th></tr>
  *   <tr><td>REPLACE</td>
- *       <td>Always inject plugin params, replacing whatever is there.</td>
- *       <td>Jenkinsfile can overwrite; next scan restores plugin params.</td></tr>
- *   <tr><td>MERGE</td>
- *       <td>Combine Jenkinsfile params with plugin params; plugin wins on name conflict.</td>
+ *       <td>Always inject plugin params only, ignoring whatever is in the Jenkinsfile.</td>
+ *       <td>Jenkinsfile can overwrite at build time; next scan restores plugin params.</td></tr>
+ *   <tr><td>MERGE_PLUGIN_WINS</td>
+ *       <td>Combine both; on a name conflict the plugin's definition takes precedence.</td>
+ *       <td>Jenkinsfile can overwrite; next scan merges again.</td></tr>
+ *   <tr><td>MERGE_JENKINSFILE_WINS</td>
+ *       <td>Combine both; on a name conflict the Jenkinsfile's definition is kept.</td>
  *       <td>Jenkinsfile can overwrite; next scan merges again.</td></tr>
  *   <tr><td>SKIP_IF_JENKINSFILE</td>
- *       <td>Inject only if params were not previously set by a Jenkinsfile build
- *           (detected by absence of the plugin header marker).</td>
+ *       <td>Inject only if the Jenkinsfile has not yet defined its own params.</td>
  *       <td>Once Jenkinsfile has set params, subsequent scans leave them untouched.</td></tr>
  * </table>
  */
@@ -33,10 +35,17 @@ public enum ParameterPolicy {
 
     /**
      * Merge plugin parameters with any parameters the Jenkinsfile already declared.
-     * Jenkinsfile-only params are preserved; on a name conflict the plugin's
-     * definition takes precedence.
+     * Jenkinsfile-only params are preserved above the banner; on a name conflict
+     * the plugin's definition takes precedence.
      */
-    MERGE,
+    MERGE_PLUGIN_WINS,
+
+    /**
+     * Merge plugin parameters with any parameters the Jenkinsfile already declared.
+     * Jenkinsfile params are kept as-is; plugin params are only added for names that
+     * the Jenkinsfile does not already define.
+     */
+    MERGE_JENKINSFILE_WINS,
 
     /**
      * Inject plugin parameters only when the job does not yet have parameters that

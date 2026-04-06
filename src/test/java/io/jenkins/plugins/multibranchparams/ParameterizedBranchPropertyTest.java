@@ -25,7 +25,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -129,7 +128,7 @@ public class ParameterizedBranchPropertyTest {
         ParameterizedBranchProperty prop = new ParameterizedBranchProperty();
         prop.setParameterDefinitions(List.of(
                 new StringParameterDefinition("DEPLOY_ENV", "staging", "Target environment")));
-        prop.setParameterPolicy(ParameterPolicy.MERGE);
+        prop.setParameterPolicy(ParameterPolicy.MERGE_PLUGIN_WINS);
 
         ParameterizedBranchProperty rt = roundTrip(prop);
 
@@ -139,7 +138,7 @@ public class ParameterizedBranchPropertyTest {
         assertEquals("DEPLOY_ENV", param.getName());
         assertEquals("staging", param.getDefaultValue());
         assertEquals("Target environment", param.getDescription());
-        assertEquals(ParameterPolicy.MERGE, rt.getParameterPolicy());
+        assertEquals(ParameterPolicy.MERGE_PLUGIN_WINS, rt.getParameterPolicy());
     }
 
     @Test
