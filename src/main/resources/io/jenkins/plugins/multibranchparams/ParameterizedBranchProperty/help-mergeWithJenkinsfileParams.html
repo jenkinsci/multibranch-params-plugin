@@ -1,14 +1,5 @@
 <div>
-  <p>Controls how UI-defined parameters interact with a
-     <code>parameters {}</code> block declared inside the branch's
-     <code>Jenkinsfile</code>.</p>
-  <dl>
-    <dt><strong>Unchecked (default)</strong></dt>
-    <dd>Parameters defined here <em>replace</em> any parameters declared in the
-        Jenkinsfile. The Jenkinsfile parameters are completely ignored.</dd>
-    <dt><strong>Checked</strong></dt>
-    <dd>Parameters are <em>merged</em>. Jenkinsfile parameters are kept as a base,
-        and parameters defined here are overlaid on top. If the same parameter name
-        appears in both places, the value defined here wins.</dd>
-  </dl>
+  <p>This field has been replaced by the <strong>Jenkinsfile parameter policy</strong>
+     dropdown, which provides three options: <em>Always replace</em>, <em>Merge</em>,
+     and <em>Skip if Jenkinsfile owns params</em>.</p>
 </div>

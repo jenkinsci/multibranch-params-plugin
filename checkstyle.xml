@@ -36,7 +36,14 @@
         <module name="LocalFinalVariableName"/>
         <module name="LocalVariableName"/>
         <module name="MemberName"/>
-        <module name="MethodName"/>
+        <!--
+            Test methods use the descriptive_scenario_expected convention
+            (e.g. allMode_matchesMain) which improves readability.
+            Allow underscores in test files only.
+        -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+        </module>
         <module name="PackageName"/>
         <module name="ParameterName"/>
         <module name="StaticVariableName"/>

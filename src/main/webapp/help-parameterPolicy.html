@@ -1,0 +1,28 @@
+<div>
+  <p>Controls how parameters defined here interact with any
+     <code>parameters {}</code> block declared inside the branch's
+     <code>Jenkinsfile</code>.</p>
+  <dl>
+    <dt><strong>Always replace</strong> (default)</dt>
+    <dd>Only the parameters defined here are used. Any parameters declared in the
+        Jenkinsfile are completely ignored. The Jenkinsfile can still overwrite them
+        at build time, but the next scan restores the Multibranch params.</dd>
+    <dt><strong>Merge — Multibranch wins on conflict</strong></dt>
+    <dd>Parameters from both sources are combined. Jenkinsfile-only parameters are
+        preserved above the banner. When the same name appears in both, the
+        Multibranch definition takes precedence.</dd>
+    <dt><strong>Merge — Jenkinsfile wins on conflict</strong></dt>
+    <dd>Parameters from both sources are combined. All Jenkinsfile parameters are kept
+        as-is above the banner. When the same name appears in both, the Jenkinsfile
+        definition is kept. Only Multibranch parameters whose names are not already
+        defined by the Jenkinsfile are added below the banner.</dd>
+    <dt><strong>Dismiss Multibranch if Jenkinsfile defines any params</strong></dt>
+    <dd>Multibranch parameters are injected only until the first Jenkinsfile build runs.
+        Once a build has stored its own <code>parameters {}</code> block, subsequent
+        scans leave those parameters untouched. Useful when Jenkinsfiles are expected
+        to be the long-term owner of their parameters.</dd>
+  </dl>
+  <p><strong>Note:</strong> No policy can prevent a running Jenkinsfile from calling
+     <code>properties()</code> and overwriting parameters at build time — that happens
+     inside the pipeline execution. The plugin operates exclusively at scan time.</p>
+</div>
