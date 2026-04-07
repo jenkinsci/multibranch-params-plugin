@@ -199,9 +199,24 @@ public class ParameterizedBranchProperty extends BranchProperty {
              * then the header, then only the plugin params whose names are NOT already
              * covered by the Jenkinsfile. On a name conflict the Jenkinsfile wins.
              * Result: {@code [All Jenkinsfile params…, Header, plugin-only params…]}
+             *
+             * <p>If the existing params still contain the plugin's header marker they were
+             * injected by a previous scan (no Jenkinsfile build has run yet), so we fall
+             * back to injecting the full plugin param list — same as the first scan.
              */
             private List<ParameterDefinition> mergeJenkinsfileWins(
                     List<JobProperty<? super P>> existingProps) {
+                boolean existingArePluginInjected = existingProps.stream()
+                        .filter(p -> p instanceof ParametersDefinitionProperty)
+                        .flatMap(p -> ((ParametersDefinitionProperty) p)
+                                .getParameterDefinitions().stream())
+                        .anyMatch(p -> p instanceof MultiBranchHeaderParameter);
+
+                if (existingArePluginInjected) {
+                    // No Jenkinsfile build has run yet — inject plugin params as usual
+                    return buildUiParamList();
+                }
+
                 Set<String> jenkinsfileNames = new HashSet<>();
                 List<ParameterDefinition> jenkinsfileParams = new ArrayList<>();
                 for (JobProperty<? super P> prop : existingProps) {
