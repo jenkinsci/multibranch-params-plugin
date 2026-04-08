@@ -4,7 +4,7 @@ import hudson.model.StringParameterDefinition;
 import hudson.model.BooleanParameterDefinition;
 import jenkins.branch.BranchProperty;
 import jenkins.scm.api.SCMHead;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -13,15 +13,15 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Pure unit tests for {@link ParameterizedBranchPropertyStrategy}.
  *
- * <p>No {@link org.jvnet.hudson.test.JenkinsRule} required – these run as plain JUnit tests
+ * <p>No Jenkins instance required – these run as plain JUnit tests
  * so they are very fast and suitable for CI pre-checks.
  */
-public class ParameterizedBranchPropertyStrategyTest {
+class ParameterizedBranchPropertyStrategyTest {
 
     // -------------------------------------------------------------------------
     // Helpers
@@ -48,19 +48,19 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void defaults_filterModeIsAll() {
+    void defaults_filterModeIsAll() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         assertEquals(ParameterizedBranchPropertyStrategy.FilterMode.ALL, s.getFilterMode());
     }
 
     @Test
-    public void defaults_patternIsMatchAll() {
+    void defaults_patternIsMatchAll() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         assertEquals(".*", s.getBranchPattern());
     }
 
     @Test
-    public void defaults_policyIsReplace() {
+    void defaults_policyIsReplace() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         assertEquals(ParameterPolicy.REPLACE, s.getParameterPolicy());
     }
@@ -70,19 +70,19 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void allMode_matchesMain() {
+    void allMode_matchesMain() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.ALL, "n/a")
                 .getPropertiesFor(head("main")), hasSize(1));
     }
 
     @Test
-    public void allMode_matchesFeatureBranch() {
+    void allMode_matchesFeatureBranch() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.ALL, "n/a")
                 .getPropertiesFor(head("feature/my-feature")), hasSize(1));
     }
 
     @Test
-    public void allMode_matchesArbitraryName() {
+    void allMode_matchesArbitraryName() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.ALL, "n/a")
                 .getPropertiesFor(head("dependabot/npm_and_yarn/lodash-4.17.21")), hasSize(1));
     }
@@ -92,37 +92,37 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void includePattern_matchesMain() {
+    void includePattern_matchesMain() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "main|develop").getPropertiesFor(head("main")), hasSize(1));
     }
 
     @Test
-    public void includePattern_matchesDevelop() {
+    void includePattern_matchesDevelop() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "main|develop").getPropertiesFor(head("develop")), hasSize(1));
     }
 
     @Test
-    public void includePattern_doesNotMatchFeature() {
+    void includePattern_doesNotMatchFeature() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "main|develop").getPropertiesFor(head("feature/login")), is(empty()));
     }
 
     @Test
-    public void includePattern_featureWildcard_matchesFeature() {
+    void includePattern_featureWildcard_matchesFeature() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "feature/.*").getPropertiesFor(head("feature/checkout")), hasSize(1));
     }
 
     @Test
-    public void includePattern_featureWildcard_doesNotMatchMain() {
+    void includePattern_featureWildcard_doesNotMatchMain() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "feature/.*").getPropertiesFor(head("main")), is(empty()));
     }
 
     @Test
-    public void includePattern_releaseWildcard_matchesRelease() {
+    void includePattern_releaseWildcard_matchesRelease() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "release/.*").getPropertiesFor(head("release/1.5.0")), hasSize(1));
     }
@@ -132,19 +132,19 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void excludePattern_excludesFeature() {
+    void excludePattern_excludesFeature() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.EXCLUDE_PATTERN,
                 "feature/.*").getPropertiesFor(head("feature/login")), is(empty()));
     }
 
     @Test
-    public void excludePattern_keepMain() {
+    void excludePattern_keepMain() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.EXCLUDE_PATTERN,
                 "feature/.*").getPropertiesFor(head("main")), hasSize(1));
     }
 
     @Test
-    public void excludePattern_keepHotfix() {
+    void excludePattern_keepHotfix() {
         assertThat(strategy(ParameterizedBranchPropertyStrategy.FilterMode.EXCLUDE_PATTERN,
                 "feature/.*").getPropertiesFor(head("hotfix/critical-bug")), hasSize(1));
     }
@@ -154,7 +154,7 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void nullFilterMode_treatedAsAll() {
+    void nullFilterMode_treatedAsAll() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         s.setFilterMode(null);
         s.setParameterDefinitions(List.of(new StringParameterDefinition("X", "y", "")));
@@ -162,17 +162,16 @@ public class ParameterizedBranchPropertyStrategyTest {
     }
 
     @Test
-    public void nullPattern_treatedAsMatchAll() {
+    void nullPattern_treatedAsMatchAll() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         s.setFilterMode(ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN);
-        s.setBranchPattern(null);  // should default to ".*"
+        s.setBranchPattern(null);
         s.setParameterDefinitions(List.of(new StringParameterDefinition("X", "y", "")));
         assertThat(s.getPropertiesFor(head("any-branch")), hasSize(1));
     }
 
     @Test
-    public void malformedRegex_doesNotThrow() {
-        // An invalid regex must not throw – strategy falls back to matching all
+    void malformedRegex_doesNotThrow() {
         ParameterizedBranchPropertyStrategy s = strategy(
                 ParameterizedBranchPropertyStrategy.FilterMode.INCLUDE_PATTERN,
                 "[invalid regex (((");
@@ -186,7 +185,7 @@ public class ParameterizedBranchPropertyStrategyTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void injectedProperty_isParameterizedBranchProperty() {
+    void injectedProperty_isParameterizedBranchProperty() {
         ParameterizedBranchPropertyStrategy s =
                 strategy(ParameterizedBranchPropertyStrategy.FilterMode.ALL, ".*");
         List<BranchProperty> props = s.getPropertiesFor(head("main"));
@@ -194,7 +193,7 @@ public class ParameterizedBranchPropertyStrategyTest {
     }
 
     @Test
-    public void injectedProperty_carriesCorrectParams() {
+    void injectedProperty_carriesCorrectParams() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         s.setFilterMode(ParameterizedBranchPropertyStrategy.FilterMode.ALL);
         s.setParameterDefinitions(List.of(
@@ -213,10 +212,9 @@ public class ParameterizedBranchPropertyStrategyTest {
     }
 
     @Test
-    public void noParamsDefined_returnsPropertyWithEmptyList() {
+    void noParamsDefined_returnsPropertyWithEmptyList() {
         ParameterizedBranchPropertyStrategy s = new ParameterizedBranchPropertyStrategy();
         s.setFilterMode(ParameterizedBranchPropertyStrategy.FilterMode.ALL);
-        // No params set
         List<BranchProperty> props = s.getPropertiesFor(head("main"));
         assertThat(props, hasSize(1));
         ParameterizedBranchProperty injected = (ParameterizedBranchProperty) props.get(0);
