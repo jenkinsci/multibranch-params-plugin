@@ -9,7 +9,7 @@ import hudson.model.ParameterValue;
 import hudson.model.Run;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * A non-functional {@link ParameterDefinition} that renders a visual header
@@ -37,13 +37,13 @@ public class MultiBranchHeaderParameter extends ParameterDefinition {
 
     @CheckForNull
     @Override
-    public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+    public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
         return null;
     }
 
     @CheckForNull
     @Override
-    public ParameterValue createValue(StaplerRequest req) {
+    public ParameterValue createValue(StaplerRequest2 req) {
         return null;
     }
 
@@ -65,20 +65,6 @@ public class MultiBranchHeaderParameter extends ParameterDefinition {
         @Override
         public String getDisplayName() {
             return "Multibranch Params Header (internal)";
-        }
-
-        /**
-         * Overridden because the default {@code getViewPage} implementation uses
-         * the Stapler/core classloader, which cannot see resources bundled inside
-         * plugin jars. Using the plugin class's own classloader ensures the
-         * {@code index.jelly} view is found at runtime.
-         */
-        @Override
-        public String getValuePage() {
-            String name = MultiBranchHeaderParameter.class.getName().replace('.', '/') + "/index.jelly";
-            return MultiBranchHeaderParameter.class.getClassLoader().getResource(name) != null
-                    ? '/' + name
-                    : null;
         }
     }
 
