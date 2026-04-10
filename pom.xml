@@ -18,7 +18,7 @@
     <packaging>hpi</packaging>
 
     <name>Multibranch Pipeline Parameterization Plugin</name>
-    <url>https://github.com/krzysztofkrzeslak/multibranch-params-plugin</url>
+    <url>https://github.com/jenkinsci/multibranch-params-plugin</url>
     <inceptionYear>2026</inceptionYear>
 
     <licenses>
@@ -30,15 +30,15 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/krzysztofkrzeslak/multibranch-params-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:krzysztofkrzeslak/multibranch-params-plugin.git</developerConnection>
-        <url>https://github.com/krzysztofkrzeslak/multibranch-params-plugin</url>
+        <connection>scm:git:https://github.com/jenkinsci/multibranch-params-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/multibranch-params-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/multibranch-params-plugin</url>
         <tag>${scmTag}</tag>
     </scm>
 
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/krzysztofkrzeslak/multibranch-params-plugin/issues</url>
+        <url>https://github.com/jenkinsci/multibranch-params-plugin/issues</url>
     </issueManagement>
 
     <properties>
