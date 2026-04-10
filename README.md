@@ -34,33 +34,6 @@ not the Jenkinsfile."_
 
 ---
 
-## Installation
-
-### From GitHub Releases
-
-Download the `.hpi` file from the [Releases](../../releases) page and install it via
-**Jenkins → Manage Jenkins → Plugins → Advanced → Upload Plugin**.
-
-### From source
-
-```bash
-git clone https://github.com/your-org/multibranch-params-plugin.git
-cd multibranch-params-plugin
-mvn clean package -DskipTests
-# Install target/multibranch-params.hpi via Jenkins → Manage Jenkins → Plugins → Advanced
-```
-
-### Requirements
-
-| Component | Minimum version |
-|---|---|
-| Jenkins | 2.426.3 |
-| Java | 11 |
-| Branch API Plugin | 2.1118.x |
-| Workflow Multibranch Plugin | 756.x |
-
----
-
 ## Usage
 
 ### Option A — Apply parameters to ALL branches
