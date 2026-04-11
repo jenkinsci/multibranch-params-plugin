@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * A {@link BranchPropertyStrategy} that applies {@link ParameterizedBranchProperty}
  * selectively to branches based on a name regex pattern.
  *
- * <h3>Filter modes</h3>
+ * <h2>Filter modes</h2>
  * <ul>
  *   <li>{@link FilterMode#ALL} – every branch receives the parameters (default).</li>
  *   <li>{@link FilterMode#INCLUDE_PATTERN} – only branches whose names match

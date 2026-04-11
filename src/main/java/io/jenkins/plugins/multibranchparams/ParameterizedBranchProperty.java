@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  *   <li>Or use {@link ParameterizedBranchPropertyStrategy} for regex-based filtering.</li>
  * </ul>
  *
- * <h3>Parameter policy</h3>
+ * <h2>Parameter policy</h2>
  * <p>The {@link #parameterPolicy} field controls how plugin-defined parameters
  * interact with any {@code parameters {}} block in the Jenkinsfile.
  * See {@link ParameterPolicy} for a full description of each mode.
