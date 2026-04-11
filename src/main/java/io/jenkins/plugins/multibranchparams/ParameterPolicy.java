@@ -8,7 +8,8 @@ package io.jenkins.plugins.multibranchparams;
  * {@code properties()} call runs at <em>build time</em> and can overwrite that.
  * This enum lets you choose the right trade-off for your pipeline.
  *
- * <table summary="Parameter policy behaviour">
+ * <table>
+ *   <caption>Parameter policy behaviour</caption>
  *   <tr><th>Mode</th><th>At scan time</th><th>After a Jenkinsfile build runs</th></tr>
  *   <tr><td>REPLACE</td>
  *       <td>Always inject plugin params only, ignoring whatever is in the Jenkinsfile.</td>
