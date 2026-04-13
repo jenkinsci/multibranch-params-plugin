@@ -18,7 +18,7 @@
     <packaging>hpi</packaging>
 
     <name>Multibranch Pipeline Parameterization Plugin</name>
-    <description>Allows defining build parameters at the Multibranch Pipeline folder level, injecting them into every branch job during scans without modifying individual Jenkinsfiles.</description>
+    <description>Define and inject build parameters (parametrisation) for Multibranch Pipeline jobs at the folder level, applying them to every branch without modifying individual Jenkinsfiles.</description>
     <url>https://github.com/jenkinsci/multibranch-params-plugin</url>
     <inceptionYear>2026</inceptionYear>
 
